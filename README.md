@@ -2,6 +2,8 @@
 
 Esta API es una demo súper básica de una API que devuelve los feriados de Argentina para los últimos 10 años.
 
+Inicialmente, solo funciona 2024.
+
 Uso:
 
 Por defecto una petición `GET` a `/` redirige a 

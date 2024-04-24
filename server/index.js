@@ -2,7 +2,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 
-const loadJsonFile = require('./src/utils/loadJsonFile');
+const loadHolidayData = require('./src/utils/loadHolidayData');
+const formatHolidayData = require('./src/utils/formatHolidayData');
 
 // Load config
 const dataPath = process.env.DATA_PATH || path.join(__dirname, '/data/')
@@ -12,23 +13,6 @@ const PORT = process.env.PORT || 3000;
 
 const YEARS_AVAILABLE_FROM = 2024;
 const YEARS_AVAILABLE_TO = 2024;
-
-
-// Helper function to load holiday data
-const loadHolidayData = (year) => {
-  const filename = `${year}.json`;
-  const filePath = path.join(dataPath, filename);
-
-  try {
-    data = loadJsonFile(dataPath, filename);
-    return data;
-  } catch (error) {
-    return { 
-      error: `Error loading data for year ${year}: ${error.message}`
-    };
-  }
-};
-
 
 // Base URL for version 1 of Argentine holidays API
 const baseRoute = '/v1/ar';
@@ -48,12 +32,35 @@ app.get('/v1/ar', (req, res) => {
 
 // API endpoint to get holidays for a given year
 app.get(`${baseRoute}/:year`, (req, res) => {
-  const { year } = req.params;
-  if (year < YEARS_AVAILABLE_FROM || year > YEARS_AVAILABLE_TO) {
-    return res.status(404).send({ error: "Data for the requested year is not available." });
+  const year = req.params.year;
+  console.log(year);
+  if (isNaN(parseInt(year))) {
+    return res.status(404).send(
+      {
+        error: `'${year}' is not a valid year. Please indicate a year using the 'YYYY' numeric format`
+      }
+    )
   }
-  const holidays = loadHolidayData(year);
-  res.json(holidays);
+
+  if (
+      year < YEARS_AVAILABLE_FROM || 
+      year > YEARS_AVAILABLE_TO
+    )
+  {
+    return res.status(404).send(
+      { 
+        error: `Data for the requested year ${year} is not available. Data currently available ranges from the year ${YEARS_AVAILABLE_FROM} to ${YEARS_AVAILABLE_TO}` 
+      }
+    );
+  }
+
+  const holidaysData = loadHolidayData(dataPath, year);
+  if (holidaysData.error) {
+    return res.status(404).send(holidaysData);
+  }
+
+  const formattedHolidays = formatHolidayData(dataPath, holidaysData, year)
+  res.json(formattedHolidays);
 });
 
 app.listen(PORT, () => {
