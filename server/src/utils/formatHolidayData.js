@@ -41,7 +41,16 @@ const formatHolidayData = (dataPath, holidays, year) => {
                 tipo: ref.tipo,
                 info: ref.info
               });
-            }
+            } else {
+              result.data.Feriados.push({
+                dia: parseInt(singleDay),
+                mes: month,
+                id: holidayId,
+                motivo: "no hay información sobre el motivo de este feriado",
+                tipo: "no hay información sobre el tipo de feriado",
+                info: "no hay enlaces con información sobre este feriado"
+              })
+            };
           });
         });
       }
