@@ -2,6 +2,11 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 
+const loadJsonFile = require('./src/utils/loadJsonFile');
+
+// Load config
+const dataPath = process.env.DATA_PATH || path.join(__dirname, '/data/')
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -11,12 +16,16 @@ const YEARS_AVAILABLE_TO = 2024;
 
 // Helper function to load holiday data
 const loadHolidayData = (year) => {
+  const filename = `${year}.json`;
+  const filePath = path.join(dataPath, filename);
+
   try {
-    const filePath = path.join(__dirname, 'data', `${year}.json`);
-    const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
+    data = loadJsonFile(dataPath, filename);
+    return data;
   } catch (error) {
-    return { error: `Error loading data for year ${year}: ${error.message}` };
+    return { 
+      error: `Error loading data for year ${year}: ${error.message}`
+    };
   }
 };
 
